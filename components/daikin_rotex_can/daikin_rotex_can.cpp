@@ -599,7 +599,7 @@ std::string DaikinRotexCanComponent::recalculate_state(EntityBase* pEntity, std:
         }
 
         if (p_betriebs_art != nullptr && state_compressor != nullptr) {
-            if (Utils::is_in(p_betriebs_art->state, Translation::T_HOT_WATER_PRODUCTION, Translation::T_HEATING) && state_compressor->state) {
+            if (p_betriebs_art->state == Translation::T_HEATING && state_compressor->state) {
                 /*
                     Coefficients calculated using the table:
                     Tv  | minimal temperature spread
