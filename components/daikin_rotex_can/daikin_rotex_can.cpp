@@ -598,37 +598,6 @@ std::string DaikinRotexCanComponent::recalculate_state(EntityBase* pEntity, std:
             }
         }
 
-        if (p_betriebs_art != nullptr && state_compressor != nullptr) {
-            if (p_betriebs_art->state == Translation::T_HEATING && state_compressor->state) {
-                /*
-                    Coefficients calculated using the table:
-                    Tv  | minimal temperature spread
-                    50° | 4.0
-                    40° | 3.0
-                    35° | 2.5
-                    29° | 1.2
-                    27° | 0.3
-                */
-                const float min_spread =
-                    -0.00004012 * std::pow(tv->state, 4)
-                    + 0.006683 * std::pow(tv->state, 3)
-                    - 0.4152 * std::pow(tv->state, 2)
-                    + 11.5006 * tv->state
-                    - 117.7908;
-
-                const bool is_error_state = state_compressor->state && m_temperature_spread_sensor->state < min_spread;
-
-                Utils::log(TAG, "betriebsart: %s, compressor: %d, spread: %f, min_spread: %f, is_good_case_detected: %d, error_ts: %d, millis: %d",
-                    p_betriebs_art->state.c_str(), state_compressor->state, m_temperature_spread_sensor->state, min_spread,
-                    m_spread_error_detection.is_good_case_detected(), m_spread_error_detection.get_error_detection_timestamp(), esphome::millis());
-
-                if (m_spread_error_detection.handle_error_detection(is_error_state)) {
-                    ESP_LOGE(TAG, "Low spread!");
-                    return new_state + "|" + Translation::T_LOW_TEMPERATURE_SPREAD;
-                }
-            }
-        }
-
         if (p_betriebs_art != nullptr && flow_rate != nullptr && dhw_mixer_position != nullptr && state_compressor != nullptr && tdhw1 != nullptr) {
             const bool is_error_state = p_betriebs_art->state == Translation::T_HOT_WATER_PRODUCTION && tdhw1->state < 48.0 && (flow_rate->state == 0.0f || dhw_mixer_position->state == 0.0f || !state_compressor->state);
             if (m_dhw_error_detection.handle_error_detection(is_error_state)) {
